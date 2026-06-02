@@ -32,6 +32,7 @@ export const FIELDS = {
   CHANNEL: 'Delivery channel',
   TOKEN: 'Token',
   REFRESH_TOKEN: 'Refresh Token',
+  ROLE: 'Role',
 
   /* --- 4. EXAMPLE MODULE --- */
 } as const;

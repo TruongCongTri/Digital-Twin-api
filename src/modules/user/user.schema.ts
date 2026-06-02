@@ -26,5 +26,38 @@ export const updateUserStatusSchema = z.object({
   }),
 });
 
+// Admin: Search and filter all users
+export const getUsersQuerySchema = z.object({
+  query: paginationSchema.extend({
+    search: z.string().trim().optional(), // Search by email or name
+    role: z.enum(['ADMIN', 'USER']).optional(),
+    status: z.enum(['PENDING', 'APPROVED', 'REJECTED']).optional(),
+  }),
+});
+
+// Admin: Promote/Demote User
+export const updateUserRoleSchema = z.object({
+  body: z.object({
+    role: z.enum(['ADMIN', 'USER'], {
+      error: () => ({ message: MESSAGES.VALIDATION.INVALID_ENUM(FIELDS.ROLE) }),
+    }),
+  }),
+});
+
+// User: Update own profile
+export const updateProfileSchema = z.object({
+  body: z.object({
+    fullName: z
+      .string({ message: MESSAGES.VALIDATION.MUST_BE_STRING(FIELDS.FULL_NAME) })
+      .trim()
+      .min(2, { message: MESSAGES.VALIDATION.MIN_LENGTH(FIELDS.FULL_NAME, 2) })
+      .max(100, { message: MESSAGES.VALIDATION.MAX_LENGTH(FIELDS.FULL_NAME, 100) })
+      .optional(),
+  }),
+});
+
 export type GetApplicantsQueryDTO = z.infer<typeof getApplicantsQuerySchema>['query'];
 export type UpdateUserStatusDTO = z.infer<typeof updateUserStatusSchema>['body'];
+export type GetUsersQueryDTO = z.infer<typeof getUsersQuerySchema>['query'];
+export type UpdateUserRoleDTO = z.infer<typeof updateUserRoleSchema>['body'];
+export type UpdateProfileDTO = z.infer<typeof updateProfileSchema>['body'];

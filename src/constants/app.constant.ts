@@ -101,6 +101,7 @@ export const SORT_OPTIONS = {
 export const TIMEFRAME_OPTIONS = ['24h', '7d', '30d'] as const;
 export const APPLICATION_STATUS = ['PENDING', 'APPROVED', 'REJECTED'] as const;
 export const APPLICATION_APPROVAL_STATUS = ['APPROVED', 'REJECTED'] as const;
+
 /* --- EXPORTED TYPES --- */
 export type OtpChannel = keyof typeof OTP_CHANNELS;
 export type SortOption = keyof typeof SORT_OPTIONS;

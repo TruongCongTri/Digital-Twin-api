@@ -29,9 +29,12 @@ export const ENDPOINTS = {
   /* --- Example Endpoints --- */
   USER: {
     BASE: '/users',
+    GET_BY_ID: '/:id',
+    GET_ROLE_OF_USER: '/:id/role',
+    PROFILE: '/me',
+    LIST: '/',
     APPLICANTS: '/applicants',
     GET_APPLICANT: '/applicants/:id',
     UPDATE_STATUS: '/applicants/:id/status',
-    PROFILE: '/me',
   },
 } as const;
