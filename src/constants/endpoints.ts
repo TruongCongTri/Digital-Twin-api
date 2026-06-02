@@ -27,4 +27,11 @@ export const ENDPOINTS = {
   },
 
   /* --- Example Endpoints --- */
+  USER: {
+    BASE: '/users',
+    APPLICANTS: '/applicants',
+    GET_APPLICANT: '/applicants/:id',
+    UPDATE_STATUS: '/applicants/:id/status',
+    PROFILE: '/me',
+  },
 } as const;
