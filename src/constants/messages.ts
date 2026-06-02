@@ -114,6 +114,7 @@ export const MESSAGES = {
       ROLE_NOT_FOUND: 'Configuration error: Default Role not found.',
       ACCOUNT_PENDING: 'Your account is pending admin approval.',
       ACCOUNT_REJECTED: 'Your account application was rejected.',
+      USER_NOT_FOUND: 'User associated with this token was not found.',
     },
   },
 
