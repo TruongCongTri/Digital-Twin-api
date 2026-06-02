@@ -5,9 +5,9 @@
  * @module Middlewares/RateLimit
  */
 import rateLimit from 'express-rate-limit';
-import { APP_CONFIG } from '../constants/app.constant';
-import { MESSAGES } from '../constants/messages';
-import { ERROR_CODES } from '../constants/error-codes';
+import { APP_CONFIG } from '@/constants/app.constant';
+import { MESSAGES } from '@/constants/messages';
+import { ERROR_CODES } from '@/constants/error-codes';
 
 /**
  * @constant apiLimiter

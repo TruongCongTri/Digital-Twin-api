@@ -1,4 +1,4 @@
-import { Prisma } from '@/generated/client';
+import { {{pascalCase name}} } from '@/generated';
 import { prisma } from '@/common/configs/prisma';
 import { BaseRepository } from '@/common/repositories/base.repository';
 import { Create{{pascalCase name}}DTO, Update{{pascalCase name}}DTO } from './{{dashCase name}}.schema';
@@ -8,7 +8,7 @@ import { Create{{pascalCase name}}DTO, Update{{pascalCase name}}DTO } from './{{
  * @description Handles all raw database interactions, atomic transactions, and CQRS routing
  * for the ScoreEvent and PlayerScore domains.
  */
-export class {{pascalCase name}}Repository extends BaseRepository<Prisma.{{pascalCase name}}Delegate> {
+export class {{pascalCase name}}Repository extends BaseRepository<{{pascalCase name}}Delegate> {
   constructor() {
     // inject Prisma client delegate for {{pascalCase name}} model
     super('{{camelCase name}}');

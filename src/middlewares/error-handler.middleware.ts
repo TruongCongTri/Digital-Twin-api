@@ -6,10 +6,10 @@
  */
 import { Request, Response, NextFunction } from 'express';
 import { z, ZodError } from 'zod';
-import { AppError } from '../common/errors/app.error';
-import { errorResponse, ValidationErrorDetail } from '../common/utils/responses/api-response';
-import { ERROR_CODES } from '../constants/error-codes';
-import { MESSAGES } from '../constants/messages';
+import { AppError } from '@/common/errors/app.error';
+import { errorResponse, ValidationErrorDetail } from '@/common/utils/responses/api-response';
+import { ERROR_CODES } from '@/constants/error-codes';
+import { MESSAGES } from '@/constants/messages';
 
 export const errorHandler = (err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   // 1. ZOD VALIDATION ERRORS

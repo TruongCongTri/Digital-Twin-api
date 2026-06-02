@@ -5,7 +5,7 @@
  * @module Common/Utils
  */
 import { Response } from 'express';
-import { PaginationMetaDto } from '../../../data/dtos/pagination.dto';
+import { PaginationMetaDto } from '@/data/dtos/pagination.dto';
 
 /**
  * @interface ValidationErrorDetail

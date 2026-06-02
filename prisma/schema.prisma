@@ -13,3 +13,117 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum AccountStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AssetStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AssetType {
+  SHAPE       // .rvt, .ifc, .zip (3D Models / Geometries)
+  ATTRIBUTE   // .xlsx (Tabular data bound to a Shape)
+  POINT       // .xlsx (Coordinates X, Y)
+}
+
+enum JobStatus {
+  PENDING
+  HANDLING
+  SUCCESS
+  FAILED
+}
+
+
+/* ==========================================
+ * MODELS
+ * ========================================== */
+
+model User {
+  id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email         String        @unique
+  password      String
+  fullName      String
+  role          Role          @default(USER)
+  accountStatus AccountStatus @default(PENDING)
+  
+  // Relations
+  assets        Asset[]       @relation("UserAssets")
+  publishJobs   PublishJob[]  @relation("UserJobs")
+
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Asset {
+  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ownerId        String      @db.Uuid @map("owner_id")
+  
+  // Metadata
+  name           String
+  description    String?     @db.Text
+  fileUrl        String      @map("file_url") // S3 or Local storage path
+  fileType       AssetType   @map("file_type")
+  
+  // JSON payload to store { "xCol": "Long", "yCol": "Lat" } for Point Data
+  metadata       Json?
+
+  // ArcGIS Sync
+  arcgisItemId   String?     @map("arcgis_item_id")
+  status         AssetStatus @default(PENDING)
+  
+  // Self-Relation: Attribute data (.xlsx) can be bound to a Shape layer (.rvt)
+  bindToShapeId  String?     @db.Uuid @map("bind_to_shape_id")
+  
+  // onDelete: SetNull ensures if the Parent Shape is deleted, the tabular data isn't deleted, just unlinked.
+  parentShape    Asset?      @relation("ShapeAttributes", fields: [bindToShapeId], references: [id], onDelete: SetNull)
+  childData      Asset[]     @relation("ShapeAttributes")
+
+  // Raw Spatial Data (Optional: If you want to store bounding boxes or center points in DB)
+  // geom        Unsupported("geometry(Point, 4326)")? 
+
+  // Relations
+  owner          User         @relation("UserAssets", fields: [ownerId], references: [id], onDelete: Cascade)
+  publishJobs    PublishJob[] @relation("AssetJobs")
+
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  @@map("assets")
+}
+
+model PublishJob {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String    @db.Uuid @map("user_id")
+  assetId        String    @db.Uuid @map("asset_id")
+  
+  // Job Tracking
+  status         JobStatus @default(PENDING)
+  progress       Int       @default(0) // 0 to 100
+  errorMessage   String?   @db.Text @map("error_message")
+  
+  // Esri Credentials temporary storage (If passing token directly, though usually handled via session)
+  // Note: For production, do not store plain Esri tokens here. Use secure sessions.
+  
+  // Relations
+  user           User      @relation("UserJobs", fields: [userId], references: [id], onDelete: Cascade)
+  asset          Asset     @relation("AssetJobs", fields: [assetId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@map("publish_jobs")
+}

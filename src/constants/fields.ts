@@ -34,15 +34,6 @@ export const FIELDS = {
   REFRESH_TOKEN: 'Refresh Token',
 
   /* --- 4. EXAMPLE MODULE --- */
-  TITLE: 'Title',
-  DESCRIPTION: 'Description',
-  PRICE: 'Price',
-  THUMBNAIL: 'Thumbnail',
-  CATEGORY: 'Category',
-  SELLER: 'Seller',
-  INSTRUCTOR: 'Instructor',
-  MIN_PRICE: 'Minimum price',
-  MAX_PRICE: 'Maximum price',
 } as const;
 
 export type FieldName = (typeof FIELDS)[keyof typeof FIELDS];

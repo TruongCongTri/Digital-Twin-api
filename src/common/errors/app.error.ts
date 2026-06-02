@@ -4,7 +4,7 @@
  * @description A custom error class designed to handle operational errors.
  * It attaches HTTP status codes and internal error codes to standard JavaScript Error objects.
  */
-import { ErrorCode } from '../../constants/error-codes';
+import { ErrorCode } from '@/constants/error-codes';
 
 export class AppError extends Error {
   /** @property {number} statusCode - The HTTP status code (e.g., 400, 404, 500) */

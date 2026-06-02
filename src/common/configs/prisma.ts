@@ -3,10 +3,10 @@
  * @description Prisma Client initialization and configuration.
  * Configures the PostgreSQL adapter and sets up logging levels based on the environment.
  */
-import { PrismaClient } from '../../generated/client';
+import { PrismaClient } from '@/generated/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
-import { env } from './env';
+import { env } from '@/common/configs/env';
 import { APP_CONFIG } from '@/constants/app.constant';
 
 /**

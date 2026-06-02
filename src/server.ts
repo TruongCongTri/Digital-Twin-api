@@ -4,9 +4,9 @@
  * Ensures infrastructure (Database) is ready before accepting incoming HTTP traffic.
  * @module Server
  */
-import { prisma } from './common/configs/prisma';
-import { env } from './common/configs/env';
-import app from './app';
+import { prisma } from '@/common/configs/prisma';
+import { env } from '@/common/configs/env';
+import app from '@/app';
 
 /**
  * @function checkDatabaseConnection

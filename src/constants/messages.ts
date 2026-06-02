@@ -3,8 +3,8 @@
  * @description Centralized message factory for the application.
  * Provides consistent phrasing for success, error, and validation states.
  */
-import { ResourceName } from './resources';
-import { FieldName } from './fields';
+import { ResourceName } from '@/constants/resources';
+import { FieldName } from '@/constants/fields';
 
 export const MESSAGES = {
   SERVER: {
@@ -112,6 +112,8 @@ export const MESSAGES = {
       WRONG_CURRENT_PASSWORD: 'Current password is incorrect.',
       PASSWORD_MUST_BE_DIFFERENT: 'New password must be different from the current password.',
       ROLE_NOT_FOUND: 'Configuration error: Default Role not found.',
+      ACCOUNT_PENDING: 'Your account is pending admin approval.',
+      ACCOUNT_REJECTED: 'Your account application was rejected.',
     },
   },
 

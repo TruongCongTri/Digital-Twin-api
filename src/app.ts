@@ -8,10 +8,10 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
-import { env } from './common/configs/env';
-import { errorHandler } from './middlewares/error-handler.middleware';
-import { API_VERSION } from './constants/endpoints';
-import v1Router from './routes/v1';
+import { env } from '@/common/configs/env';
+import { errorHandler } from '@/middlewares/error-handler.middleware';
+import { API_VERSION } from '@/constants/endpoints';
+import v1Router from '@/routes/v1';
 
 const app = express();
 

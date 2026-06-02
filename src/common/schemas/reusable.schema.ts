@@ -7,7 +7,7 @@
 import { z } from 'zod';
 import { MESSAGES } from '@/constants/messages';
 import { FIELDS } from '@/constants/fields';
-import { APP_CONFIG, SORT_OPTIONS, TIMEFRAME_OPTIONS } from '@/constants/app.constant';
+import { APP_CONFIG } from '@/constants/app.constant';
 
 /**
  * @constant SLUG_REGEX
@@ -30,34 +30,6 @@ export const paginationSchema = z.object({
     .min(1)
     .max(APP_CONFIG.COMMON.PAGINATION.MAX_LIMIT)
     .default(APP_CONFIG.COMMON.PAGINATION.DEFAULT_LIMIT),
-});
-
-/**
- * @schema getIDSchema
- * @description Validates a single UUID identifier passed in request parameters.
- */
-export const getProductsQuerySchema = z.object({
-  query: paginationSchema
-    .extend({
-      search: z.string().trim().optional(),
-      categorySlug: z.string().trim().optional(),
-      sellerSlug: z.string().trim().optional(),
-
-      minPrice: z.coerce.number().min(0).optional(),
-      maxPrice: z.coerce.number().min(0).optional(),
-
-      sortBy: z.enum(SORT_OPTIONS.PRODUCT).default(SORT_OPTIONS.PRODUCT[0]), // newest
-      timeframe: z.enum(TIMEFRAME_OPTIONS).optional(),
-    })
-    .refine(
-      (data) => {
-        if (data.minPrice !== undefined && data.maxPrice !== undefined) {
-          return data.minPrice <= data.maxPrice;
-        }
-        return true;
-      },
-      { message: MESSAGES.VALIDATION.MIN_VALUE_INVALID(FIELDS.PRICE), path: [FIELDS.PRICE] }
-    ),
 });
 
 /**
