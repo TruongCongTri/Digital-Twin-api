@@ -23,6 +23,7 @@ export class AuthRepository extends BaseRepository<User> {
         email: true,
         isEmailVerified: true,
         fullName: true,
+        accountStatus: true,
       },
     });
   }
