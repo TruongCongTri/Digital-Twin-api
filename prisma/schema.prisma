@@ -40,8 +40,8 @@ enum AssetType {
 
 enum JobStatus {
   PENDING
-  HANDLING
-  SUCCESS
+  PROCESSING
+  COMPLETED
   FAILED
 }
 enum OtpType {

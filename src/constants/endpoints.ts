@@ -46,4 +46,8 @@ export const ENDPOINTS = {
     GET_BY_ID: '/:id',
     UPDATE_STATUS: '/:id/status',
   },
+
+  JOB: {
+    BASE: '/jobs',
+  },
 } as const;

@@ -38,6 +38,7 @@ export const FIELDS = {
 
   /* --- 4. EXAMPLE MODULE --- */
   ASSET_FILE: 'Asset file type',
+  ASSET_ID: 'Asset ID',
 } as const;
 
 export type FieldName = (typeof FIELDS)[keyof typeof FIELDS];

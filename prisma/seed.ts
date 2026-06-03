@@ -65,6 +65,17 @@ async function main() {
   });
   console.log(`✅ Mock Shape Asset Created: ${mockShapeAsset.id}`);
   
+  // 5. Create a Mock Publish Job (Simulating a successfully processed ArcGIS layer)
+  const mockPublishJob = await prisma.publishJob.create({
+    data: {
+      assetId: mockShapeAsset.id,
+      status: 'COMPLETED',
+      progress: 100,
+      errorLog: null,
+    },
+  });
+  console.log(`✅ Mock Publish Job Created for Asset: ${mockPublishJob.id}`);
+
   console.log('🎉 Seeding finished.');
 }
 
