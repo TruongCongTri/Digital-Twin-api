@@ -5,6 +5,7 @@
  * @module App
  */
 import express, { Request, Response } from 'express';
+import path from 'path';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
@@ -50,6 +51,9 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Serve the uploads folder publicly
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Health Check Route
 app.get('/health', (_req: Request, res: Response) => {

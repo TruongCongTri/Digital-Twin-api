@@ -7,8 +7,8 @@
 import { Router } from 'express';
 import { ENDPOINTS } from '@/constants/endpoints';
 import authRouter from '@/modules/auth/auth.route';
-
 import userRouter from '@/modules/user/user.route';
+import assetRouter from '@/modules/asset/asset.route';
 
 const v1Router = Router();
 
@@ -19,5 +19,6 @@ const v1Router = Router();
  */
 v1Router.use(ENDPOINTS.AUTH.BASE, authRouter);
 v1Router.use(ENDPOINTS.USER.BASE, userRouter);
+v1Router.use('/assets', assetRouter);
 
 export default v1Router;

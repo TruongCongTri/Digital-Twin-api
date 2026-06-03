@@ -68,7 +68,6 @@ model User {
 
   // Relations
   assets        Asset[]       @relation("UserAssets")
-  publishJobs   PublishJob[]  @relation("UserJobs")
   sessions      Session[]     @relation("UserSessions")
 
   createdAt     DateTime      @default(now()) @map("created_at")
@@ -140,7 +139,7 @@ model Asset {
 
   // Relations
   owner          User         @relation("UserAssets", fields: [ownerId], references: [id], onDelete: Cascade)
-  publishJobs    PublishJob[] @relation("AssetJobs")
+  publishJob   PublishJob?  @relation("AssetJob")
 
   createdAt      DateTime     @default(now()) @map("created_at")
   updatedAt      DateTime     @updatedAt @map("updated_at")
@@ -149,24 +148,18 @@ model Asset {
 }
 
 model PublishJob {
-  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId         String    @db.Uuid @map("user_id")
-  assetId        String    @db.Uuid @map("asset_id")
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   
-  // Job Tracking
-  status         JobStatus @default(PENDING)
-  progress       Int       @default(0) // 0 to 100
-  errorMessage   String?   @db.Text @map("error_message")
+  // @unique forces the strict 1-to-1 relationship!
+  assetId      String    @unique @db.Uuid @map("asset_id")
+  asset        Asset     @relation("AssetJob", fields: [assetId], references: [id], onDelete: Cascade)
   
-  // Esri Credentials temporary storage (If passing token directly, though usually handled via session)
-  // Note: For production, do not store plain Esri tokens here. Use secure sessions.
+  status       JobStatus @default(PENDING)
+  progress     Int       @default(0) // 0 to 100
+  errorLog     String?   @db.Text @map("error_log")
   
-  // Relations
-  user           User      @relation("UserJobs", fields: [userId], references: [id], onDelete: Cascade)
-  asset          Asset     @relation("AssetJobs", fields: [assetId], references: [id], onDelete: Cascade)
-
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
 
   @@map("publish_jobs")
 }

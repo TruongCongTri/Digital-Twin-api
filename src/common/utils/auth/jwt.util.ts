@@ -22,7 +22,10 @@ export const JwtUtil = {
   },
 
   // --- 2. REFRESH TOKEN ---
-  generateRefreshToken: (payload: { id: string }, options: SignOptions = {}): string => {
+  generateRefreshToken: (
+    payload: { id: string; jti?: string },
+    options: SignOptions = {}
+  ): string => {
     const signOptions: SignOptions = { ...options };
     if (signOptions.expiresIn === undefined) {
       signOptions.expiresIn = env.JWT_REFRESH_EXPIRES_IN as any;
@@ -31,7 +34,7 @@ export const JwtUtil = {
     return jwt.sign(payload, env.JWT_REFRESH_SECRET, signOptions);
   },
 
-  verifyRefreshToken: (token: string): { id: string } => {
+  verifyRefreshToken: (token: string): { id: string; jti?: string } => {
     return jwt.verify(token, env.JWT_REFRESH_SECRET) as { id: string };
   },
 };

@@ -7,7 +7,9 @@ export const FIELDS = {
   // --- SERVER ---
   DB: 'DATABASE_URL',
   CLIENT: 'CLIENT_URL',
-  REDIS: 'REDIS_URL',
+  REDIS_HOST: 'REDIS_HOST',
+  REDIS_PORT: 'REDIS_PORT',
+
   /* --- 1. GENERAL & INFRASTRUCTURE --- */
   ID: 'ID',
   SLUG: 'Slug',
@@ -35,6 +37,7 @@ export const FIELDS = {
   ROLE: 'Role',
 
   /* --- 4. EXAMPLE MODULE --- */
+  ASSET_FILE: 'Asset file type',
 } as const;
 
 export type FieldName = (typeof FIELDS)[keyof typeof FIELDS];

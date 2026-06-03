@@ -17,6 +17,7 @@ export const RESOURCES = {
   ZALO: 'Zalo',
 
   /* --- Example Module --- */
+  ASSET: 'Asset',
 } as const;
 
 export type ResourceName = (typeof RESOURCES)[keyof typeof RESOURCES];

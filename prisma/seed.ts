@@ -52,8 +52,22 @@ async function main() {
   });
   console.log(`✅ Pending User Created: ${pendingUser.email}`);
 
+  // 4. Create a Mock Approved Shape Asset (So we can test binding tabular data to it)
+  const mockShapeAsset = await prisma.asset.create({
+    data: {
+      ownerId: standardUser.id,
+      name: 'Central Hospital Model',
+      description: 'Main architectural RVT model for the hospital.',
+      fileType: 'SHAPE',
+      fileUrl: '/uploads/mock-hospital.rvt', // Doesn't actually exist on disk, just for DB testing
+      status: 'APPROVED',
+    },
+  });
+  console.log(`✅ Mock Shape Asset Created: ${mockShapeAsset.id}`);
+  
   console.log('🎉 Seeding finished.');
 }
+
 
 main()
   .catch((e) => {

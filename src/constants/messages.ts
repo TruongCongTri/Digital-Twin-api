@@ -23,6 +23,7 @@ export const MESSAGES = {
       ALREADY_EXISTS: (resource: ResourceName) => `This ${resource.toLowerCase()} already exists.`,
       INVALID_INPUT: 'Invalid input data.',
       INTERNAL_SERVER_ERROR: 'Internal server error. Please try again later.',
+      NO_FILE_UPLOADED: 'No file was uploaded. Please provide a valid file.',
     },
   },
   SYSTEM: {
@@ -119,4 +120,16 @@ export const MESSAGES = {
   },
 
   // 5. EXAMPLES
+  ASSET: {
+    // <-- New ASSET block
+    SUCCESS: {
+      UPLOADED: 'Asset uploaded successfully and is pending approval.',
+    },
+    ERROR: {
+      MISSING_BIND_ID: 'ATTRIBUTE files must provide a bindToShapeId to link to a 3D Shape.',
+      INVALID_BIND_TARGET: 'Invalid bindToShapeId. Target must exist and be a SHAPE asset.',
+      INVALID_SHAPE_EXT: 'SHAPE assets must be .rvt, .ifc, or .zip.',
+      INVALID_DATA_EXT: 'ATTRIBUTE/POINT assets must be .xlsx or .csv.',
+    },
+  },
 };

@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { env } from '@/common/configs/env';
 import { JwtUtil } from '@/common/utils/auth/jwt.util';
@@ -117,7 +118,10 @@ export class AuthService {
     }
 
     // 4. Issue Tokens
-    const refreshToken = JwtUtil.generateRefreshToken({ id: user.id });
+    const refreshToken = JwtUtil.generateRefreshToken({
+      id: user.id,
+      jti: crypto.randomUUID(),
+    });
     const expiresInDays = rememberMe
       ? APP_CONFIG.AUTH.REMEMBER_ME_EXPIRES_IN_DAYS
       : APP_CONFIG.AUTH.SESSION_EXPIRES_IN_DAYS;
@@ -169,7 +173,10 @@ export class AuthService {
       : APP_CONFIG.AUTH.SESSION_EXPIRES_IN_DAYS;
     const newExpiresAt = new Date(Date.now() + newExpiresInDays * 24 * 60 * 60 * 1000);
 
-    const newRefreshToken = JwtUtil.generateRefreshToken({ id: session.user.id });
+    const newRefreshToken = JwtUtil.generateRefreshToken({
+      id: session.user.id,
+      jti: crypto.randomUUID(),
+    });
     const newAccessToken = JwtUtil.generateAccessToken({
       id: session.user.id,
       role: session.user.role,

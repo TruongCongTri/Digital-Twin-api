@@ -16,8 +16,8 @@ const envSchema = z.object({
   PORT: z.string().default(APP_CONFIG.SERVER.DEFAULT_PORT),
   DATABASE_URL: z.string().min(1, MESSAGES.SERVER.CONFIGURE(FIELDS.DB)),
   CLIENT_URL: z.string().min(1, MESSAGES.SERVER.CONFIGURE(FIELDS.CLIENT)),
-
-  REDIS_URL: z.string().min(1, MESSAGES.SERVER.CONFIGURE(FIELDS.REDIS)),
+  REDIS_HOST: z.string().min(1, MESSAGES.SERVER.CONFIGURE(FIELDS.REDIS_HOST)),
+  REDIS_PORT: z.string().default('6379'),
   JWT_SECRET: z.string().min(10),
   JWT_EXPIRES_IN: z.string().default('15m'), // Mặc định là 15 phút
   JWT_REFRESH_SECRET: z.string().min(10),

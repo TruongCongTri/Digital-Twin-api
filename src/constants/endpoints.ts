@@ -7,6 +7,9 @@
 export const API_VERSION = '/api/v1';
 
 export const ENDPOINTS = {
+  BASE: {
+    BASE: '/',
+  },
   /* --- Authentication Module --- */
   AUTH: {
     BASE: '/auth',
@@ -36,5 +39,11 @@ export const ENDPOINTS = {
     APPLICANTS: '/applicants',
     GET_APPLICANT: '/applicants/:id',
     UPDATE_STATUS: '/applicants/:id/status',
+  },
+
+  ASSET: {
+    BASE: '/assets',
+    GET_BY_ID: '/:id',
+    UPDATE_STATUS: '/:id/status',
   },
 } as const;
