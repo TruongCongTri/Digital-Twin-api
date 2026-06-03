@@ -10,6 +10,7 @@ import authRouter from '@/modules/auth/auth.route';
 import userRouter from '@/modules/user/user.route';
 import assetRouter from '@/modules/asset/asset.route';
 import jobRouter from '@/modules/job/job.route';
+import workspaceRouter from '@/modules/workspace/workspace.route';
 
 const v1Router = Router();
 
@@ -22,4 +23,6 @@ v1Router.use(ENDPOINTS.AUTH.BASE, authRouter);
 v1Router.use(ENDPOINTS.USER.BASE, userRouter);
 v1Router.use(ENDPOINTS.ASSET.BASE, assetRouter);
 v1Router.use(ENDPOINTS.JOB.BASE, jobRouter);
+v1Router.use(ENDPOINTS.WORKSPACE.BASE, workspaceRouter);
+
 export default v1Router;

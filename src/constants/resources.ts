@@ -19,6 +19,8 @@ export const RESOURCES = {
   /* --- Example Module --- */
   ASSET: 'Asset',
   JOB: 'Publish Job',
+
+  WORKSPACE: 'Workspace',
 } as const;
 
 export type ResourceName = (typeof RESOURCES)[keyof typeof RESOURCES];

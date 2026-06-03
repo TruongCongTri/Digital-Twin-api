@@ -8,7 +8,7 @@ import { Create{{pascalCase name}}DTO, Update{{pascalCase name}}DTO } from './{{
  * @description Handles all raw database interactions, atomic transactions, and CQRS routing
  * for the ScoreEvent and PlayerScore domains.
  */
-export class {{pascalCase name}}Repository extends BaseRepository<{{pascalCase name}}Delegate> {
+export class {{pascalCase name}}Repository extends BaseRepository<{{pascalCase name}}> {
   constructor() {
     // inject Prisma client delegate for {{pascalCase name}} model
     super('{{camelCase name}}');

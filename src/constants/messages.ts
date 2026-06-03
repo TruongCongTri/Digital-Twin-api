@@ -55,6 +55,7 @@ export const MESSAGES = {
     REQUIRED: (field: FieldName) => `${field} is required.`,
     MUST_BE_STRING: (field: FieldName) => `${field} must be a string.`,
     INVALID_EMAIL: 'Invalid email format.',
+    INVALID_INVITATION_TOKEN: 'Invalid invitation token.',
     MIN_LENGTH: (field: FieldName, min: number) => `${field} must be at least ${min} characters.`,
     MAX_LENGTH: (field: FieldName, max: number) => `${field} must not exceed ${max} characters.`,
     EXACT_LENGTH: (field: FieldName, length: number) =>
@@ -130,6 +131,23 @@ export const MESSAGES = {
       INVALID_BIND_TARGET: 'Invalid bindToShapeId. Target must exist and be a SHAPE asset.',
       INVALID_SHAPE_EXT: 'SHAPE assets must be .rvt, .ifc, or .zip.',
       INVALID_DATA_EXT: 'ATTRIBUTE/POINT assets must be .xlsx or .csv.',
+    },
+  },
+
+  WORKSPACE: {
+    SUCCESS: {
+      INVITED: `Invitation sent successfully to join workspace.`,
+      jOINED: 'Joined workspace successfully.',
+      REMOVED: 'Member removed from workspace successfully.',
+    },
+    ERROR: {
+      NOT_OWNER: 'Only Owners can perform this action.',
+      ALREADY_MEMBER: 'User is already a member of this workspace.',
+      INVALID_INVITE: 'Invalid or expired invitation token.',
+      EMAIL_MISMATCH: 'This invitation was sent to a different email address.',
+      MEMBER_NOT_FOUND: 'Member not found in this workspace.',
+      CANNOT_CHANGE_OWN_ROLE: 'You cannot change your own role.',
+      CANNOT_REMOVE_SELF: 'You cannot remove yourself. Delete the workspace instead.',
     },
   },
 };

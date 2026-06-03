@@ -49,6 +49,18 @@ enum OtpType {
   FORGOT_PASSWORD
 }
 
+enum WorkspaceRole {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+}
+
 /* ==========================================
  * MODELS
  * ========================================== */
@@ -69,6 +81,8 @@ model User {
   // Relations
   assets        Asset[]       @relation("UserAssets")
   sessions      Session[]     @relation("UserSessions")
+  workspaces    WorkspaceMember[] @relation("UserWorkspaces")
+  sentInvites   WorkspaceInvitation[] @relation("SentInvitations")
 
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
@@ -139,7 +153,9 @@ model Asset {
 
   // Relations
   owner          User         @relation("UserAssets", fields: [ownerId], references: [id], onDelete: Cascade)
-  publishJob   PublishJob?  @relation("AssetJob")
+  publishJob     PublishJob?  @relation("AssetJob")
+  workspaceId    String?      @db.Uuid @map("workspace_id")
+  workspace      Workspace?   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   createdAt      DateTime     @default(now()) @map("created_at")
   updatedAt      DateTime     @updatedAt @map("updated_at")
@@ -162,4 +178,54 @@ model PublishJob {
   updatedAt    DateTime  @updatedAt @map("updated_at")
 
   @@map("publish_jobs")
+}
+
+
+model Workspace {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  description String?   @db.Text
+  
+  // Relations
+  members     WorkspaceMember[]
+  invitations WorkspaceInvitation[]
+  assets      Asset[]   // A workspace now owns the assets!
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId String        @db.Uuid @map("workspace_id")
+  userId      String        @db.Uuid @map("user_id")
+  role        WorkspaceRole @default(VIEWER)
+
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User          @relation("UserWorkspaces", fields: [userId], references: [id], onDelete: Cascade)
+
+  joinedAt    DateTime      @default(now()) @map("joined_at")
+
+  @@unique([workspaceId, userId]) // A user can only have one role per workspace
+  @@map("workspace_members")
+}
+
+model WorkspaceInvitation {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId String        @db.Uuid @map("workspace_id")
+  email       String
+  role        WorkspaceRole @default(VIEWER)
+  token       String        @unique // Cryptographic token sent in email
+  status      InviteStatus  @default(PENDING)
+  expiresAt   DateTime      @map("expires_at")
+
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  inviterId   String        @db.Uuid @map("inviter_id") // The user who sent the invite
+  inviter     User          @relation("SentInvitations", fields: [inviterId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  @@map("workspace_invitations")
 }

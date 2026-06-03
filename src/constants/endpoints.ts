@@ -9,6 +9,7 @@ export const API_VERSION = '/api/v1';
 export const ENDPOINTS = {
   BASE: {
     BASE: '/',
+    GET_BY_ID: '/:id',
   },
   /* --- Authentication Module --- */
   AUTH: {
@@ -49,5 +50,15 @@ export const ENDPOINTS = {
 
   JOB: {
     BASE: '/jobs',
+  },
+  WORKSPACE: {
+    BASE: '/workspaces',
+    SEND_INVITE: '/:id/invites',
+    UPDATE_MEMBER_ROLE: '/:id/members/:userId/role',
+    REMOVE_MEMBER: '/:id/members/:userId',
+    LIST_MEMBERS: '/:id/members',
+    LIST_INVITES: '/:id/invites',
+    REVOKE_INVITE: '/:id/invites/:inviteId',
+    LEAVE_WORKSPACE: '/:id/leave',
   },
 } as const;
