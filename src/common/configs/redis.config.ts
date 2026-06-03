@@ -1,5 +1,5 @@
 import { Redis } from 'ioredis';
-import { env } from './env';
+import { env } from './env.config';
 
 // BullMQ requires maxRetriesPerRequest to be null
 export const redisConnection = new Redis({

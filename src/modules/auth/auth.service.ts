@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
-import { env } from '@/common/configs/env';
+import { env } from '@/common/configs/env.config';
 import { JwtUtil } from '@/common/utils/auth/jwt.util';
 import { AuthRepository } from './auth.repository';
 import { AppError } from '@/common/errors/app.error';

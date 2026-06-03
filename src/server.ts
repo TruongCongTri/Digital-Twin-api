@@ -4,9 +4,11 @@
  * Ensures infrastructure (Database) is ready before accepting incoming HTTP traffic.
  * @module Server
  */
+import http from 'http';
 import { prisma } from '@/common/configs/prisma';
-import { env } from '@/common/configs/env';
+import { env } from '@/common/configs/env.config';
 import app from '@/app';
+import { initializeSocket } from '@/common/configs/socket.config';
 
 /**
  * @function checkDatabaseConnection
@@ -33,7 +35,11 @@ const startServer = async () => {
 
     const port = parseInt(env.PORT, 10);
 
-    app.listen(port, () => {
+    const server = http.createServer(app);
+
+    initializeSocket(server);
+
+    server.listen(port, () => {
       console.log(`=================================`);
       console.log(`API Server is running at: http://localhost:${port}`);
       console.log(`Accepting connections from: ${env.CLIENT_URL}`);

@@ -8,6 +8,7 @@ import {
 } from './workspace.schema';
 import { AppError } from '@/common/errors/app.error';
 import crypto from 'crypto';
+import { NotificationService } from '../notification/notification.service';
 
 /**
  * @class WorkspaceService
@@ -16,9 +17,11 @@ import crypto from 'crypto';
  */
 export class WorkspaceService {
   private readonly workspaceRepository: WorkspaceRepository;
+  private readonly notificationService: NotificationService;
 
   constructor() {
     this.workspaceRepository = new WorkspaceRepository();
+    this.notificationService = new NotificationService();
   }
 
   public async create(userId: string, data: CreateWorkspaceDTO) {
@@ -106,6 +109,14 @@ export class WorkspaceService {
       userId,
       invite.role
     );
+
+    await this.notificationService.sendDirectNotification({
+      userId: invite.inviterId,
+      title: 'New Team Member!',
+      message: `${email} has accepted your invitation to ${invite.workspace.name}.`,
+      type: 'SUCCESS',
+      relatedEntityId: invite.workspaceId,
+    });
     return { workspaceId: invite.workspaceId, name: invite.workspace.name };
   }
 

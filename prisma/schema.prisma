@@ -14,6 +14,9 @@ datasource db {
   provider = "postgresql"
 }
 
+/* ==========================================
+ * AUTH & USER MODULE
+ * ========================================== */
 
 enum Role {
   ADMIN
@@ -26,44 +29,10 @@ enum AccountStatus {
   REJECTED
 }
 
-enum AssetStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-enum AssetType {
-  SHAPE       // .rvt, .ifc, .zip (3D Models / Geometries)
-  ATTRIBUTE   // .xlsx (Tabular data bound to a Shape)
-  POINT       // .xlsx (Coordinates X, Y)
-}
-
-enum JobStatus {
-  PENDING
-  PROCESSING
-  COMPLETED
-  FAILED
-}
 enum OtpType {
   VERIFY_ACCOUNT
   FORGOT_PASSWORD
 }
-
-enum WorkspaceRole {
-  OWNER
-  EDITOR
-  VIEWER
-}
-
-enum InviteStatus {
-  PENDING
-  ACCEPTED
-  REVOKED
-}
-
-/* ==========================================
- * MODELS
- * ========================================== */
 
 model User {
   id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -83,6 +52,9 @@ model User {
   sessions      Session[]     @relation("UserSessions")
   workspaces    WorkspaceMember[] @relation("UserWorkspaces")
   sentInvites   WorkspaceInvitation[] @relation("SentInvitations")
+  notifications Notification[] 
+  scenes        Scene[]       
+  annotations   Annotation[]  
 
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
@@ -124,6 +96,22 @@ model Otp {
   @@map("otps")
 }
 
+/* ==========================================
+ * ASSET MODULE
+ * ========================================== */
+
+enum AssetStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AssetType {
+  SHAPE       // .rvt, .ifc, .zip (3D Models / Geometries)
+  ATTRIBUTE   // .xlsx (Tabular data bound to a Shape)
+  POINT       // .xlsx (Coordinates X, Y)
+}
+
 model Asset {
   id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   ownerId        String      @db.Uuid @map("owner_id")
@@ -163,6 +151,17 @@ model Asset {
   @@map("assets")
 }
 
+// ==========================================
+// JOB MODULE
+// ==========================================
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 model PublishJob {
   id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   
@@ -180,6 +179,22 @@ model PublishJob {
   @@map("publish_jobs")
 }
 
+// ==========================================
+// WORKSPACE MODULE
+// ==========================================
+
+
+enum WorkspaceRole {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+}
 
 model Workspace {
   id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -190,6 +205,7 @@ model Workspace {
   members     WorkspaceMember[]
   invitations WorkspaceInvitation[]
   assets      Asset[]   // A workspace now owns the assets!
+  scenes      Scene[] 
 
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
@@ -228,4 +244,75 @@ model WorkspaceInvitation {
   createdAt   DateTime      @default(now()) @map("created_at")
 
   @@map("workspace_invitations")
+}
+
+// ==========================================
+// NOTIFICATION MODULE
+// ==========================================
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}
+
+model Notification {
+  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String           @db.Uuid @map("user_id")
+  title           String
+  message         String           @db.Text
+  type            NotificationType @default(INFO)
+  isRead          Boolean          @default(false) @map("is_read")
+  
+  // Optional linkage to what caused the notification
+  relatedEntityId String?          @map("related_entity_id") 
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime         @default(now()) @map("created_at")
+
+  @@map("notifications")
+}
+
+// ==========================================
+// SCENE & ANNOTATION MODULE
+// ==========================================
+model Scene {
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId     String       @db.Uuid @map("workspace_id")
+  authorId        String       @db.Uuid @map("author_id")
+  name            String
+  description     String?      @db.Text
+  
+  // Store the 3D Engine Camera State (x, y, z, pitch, yaw, roll)
+  cameraState     Json         @map("camera_state")
+  
+  // Store which layers/assets are turned on or off
+  layerVisibility Json?        @map("layer_visibility")
+
+  workspace       Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  author          User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  annotations     Annotation[]
+
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  @@map("scenes")
+}
+
+model Annotation {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sceneId     String    @db.Uuid @map("scene_id")
+  authorId    String    @db.Uuid @map("author_id")
+  
+  text        String    @db.Text
+  // Store XYZ coordinates where the pin is dropped in the 3D space
+  position    Json
+  
+  scene       Scene     @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("annotations")
 }

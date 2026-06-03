@@ -24,6 +24,7 @@ const envSchema = z.object({
   JWT_REFRESH_EXPIRES_IN: z.string().default('7d'), // Mặc định là 7 ngày
 
   BCRYPT_SALT_ROUNDS: z.coerce.number().int().min(1).default(10), // Tự động ép kiểu sang số!
+  CORS_ORIGIN: z.string().default('*'), // Mặc định cho phép tất cả origin (cẩn thận khi dùng trong production)
 });
 
 /**
