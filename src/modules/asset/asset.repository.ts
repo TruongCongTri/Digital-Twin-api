@@ -6,7 +6,7 @@ import { GetAssetsQueryDTO } from './asset.schema';
 /**
  * @class AssetRepository
  * @description Handles all raw database interactions, atomic transactions, and CQRS routing
- * for the ScoreEvent and PlayerScore domains.
+ * for the Asset domain.
  */
 export class AssetRepository extends BaseRepository<Asset> {
   constructor() {
@@ -23,6 +23,7 @@ export class AssetRepository extends BaseRepository<Asset> {
     }
 
     if (query.status) where.status = query.status;
+    if (query.syncStatus) where.syncStatus = query.syncStatus;
     if (query.fileType) where.fileType = query.fileType;
     if (query.search) {
       where.name = { contains: query.search, mode: 'insensitive' };
@@ -63,6 +64,27 @@ export class AssetRepository extends BaseRepository<Asset> {
     return await prisma.asset.update({
       where: { id },
       data: { status },
+    });
+  }
+
+  /**
+   * @method getAssetById
+   * @description Fetch a single asset
+   */
+  public async getAssetById(id: string) {
+    return await prisma.asset.findUnique({
+      where: { id },
+      include: { owner: { select: { fullName: true, email: true } } },
+    });
+  }
+
+  /**
+   * @method deleteAsset
+   * @description Delete an asset record entirely
+   */
+  public async deleteAsset(id: string) {
+    return await prisma.asset.delete({
+      where: { id },
     });
   }
 }

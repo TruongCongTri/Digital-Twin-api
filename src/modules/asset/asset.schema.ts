@@ -49,6 +49,7 @@ export const updateAssetStatusSchema = z.object({
 export const getAssetsQuerySchema = z.object({
   query: paginationSchema.extend({
     status: z.enum(['PENDING', 'APPROVED', 'REJECTED']).optional(),
+    syncStatus: z.enum(['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED']).optional(),
     fileType: z.enum(['SHAPE', 'ATTRIBUTE', 'POINT']).optional(),
     search: z.string().optional(),
   }),

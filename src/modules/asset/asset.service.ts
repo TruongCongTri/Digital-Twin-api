@@ -10,13 +10,14 @@ import { ERROR_CODES } from '@/constants/error-codes';
 import { MESSAGES } from '@/constants/messages';
 import { RESOURCES } from '@/constants/resources';
 import { PaginationMetaDto } from '@/data/dtos/pagination.dto';
+import { assetSyncQueue } from './asset.worker';
 import fs from 'fs';
 import path from 'path';
 
 /**
  * @class AssetService
- * @description Orchestrates business logic, verifies entity existence before mutations,
- * and constructs standardized pagination metadata for the client layer.
+ * @description Orchestrates business logic, file validation, and automatically
+ * dispatches ArcGIS background synchronization jobs via Redis/BullMQ.
  */
 export class AssetService {
   private readonly assetRepository: AssetRepository;
@@ -60,7 +61,6 @@ export class AssetService {
     // 2. Validate Binding Rules
     if (dto.fileType === 'ATTRIBUTE') {
       if (!dto.bindToShapeId) {
-        // If it's an attribute file, we must delete the orphaned file from disk before throwing
         this.removeFileFromDisk(file.filename);
         throw new AppError(
           400,
@@ -69,7 +69,7 @@ export class AssetService {
         );
       }
 
-      const parentShape = await this.assetRepository.findById(dto.bindToShapeId);
+      const parentShape = await this.assetRepository.getAssetById(dto.bindToShapeId);
       if (!parentShape || parentShape.fileType !== 'SHAPE') {
         this.removeFileFromDisk(file.filename);
         throw new AppError(
@@ -92,10 +92,19 @@ export class AssetService {
       name: dto.name,
       description: dto.description ?? null,
       fileType: dto.fileType,
-      fileUrl: `/uploads/${file.filename}`, // Mock S3 path for now
+      fileUrl: `/uploads/${file.filename}`,
       metadata: parsedMetadata ?? null,
       bindToShapeId: dto.bindToShapeId ?? null,
-      status: 'PENDING', // Awaiting Admin QA/QC
+      status: 'PENDING', // Map Visibility (Awaiting Admin QA/QC)
+      syncStatus: 'PENDING', // Background Job Status
+      syncProgress: 0,
+    });
+
+    // 5. DISPATCH BACKGROUND JOB
+    // Instantly queue this asset for ArcGIS processing in the background
+    await assetSyncQueue.add(`sync-${newAsset.id}`, {
+      assetId: newAsset.id,
+      ownerId: userId,
     });
 
     return newAsset;
@@ -107,8 +116,19 @@ export class AssetService {
     return { data, meta };
   }
 
+  public async getPublicAssets(query: GetAssetsQueryDTO) {
+    // Force the status query to only fetch APPROVED assets for the public
+    query.status = 'APPROVED';
+
+    // Pass 'ADMIN' role to bypass the ownerId check in the repository
+    const { total, data } = await this.assetRepository.findAssets(query, undefined, 'ADMIN');
+
+    const meta = PaginationMetaDto.create(query.page, query.limit, total);
+    return { data, meta };
+  }
+
   public async getAssetDetail(id: string) {
-    const asset = await this.assetRepository.findById(id);
+    const asset = await this.assetRepository.getAssetById(id);
     if (!asset)
       throw new AppError(
         404,
@@ -119,7 +139,8 @@ export class AssetService {
   }
 
   public async updateStatus(id: string, payload: UpdateAssetStatusDTO) {
-    await this.getAssetDetail(id);
+    await this.getAssetDetail(id); // Ensures asset exists
+    // Changes map visibility (APPROVED | REJECTED)
     return await this.assetRepository.updateStatus(id, payload.status as any);
   }
 

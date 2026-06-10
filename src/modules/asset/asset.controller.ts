@@ -15,7 +15,7 @@ import { AppError } from '@/common/errors/app.error';
 /**
  * @class AssetController
  * @description Bridges the Express HTTP layer and the underlying Service logic.
- * Assumes a global async-error handler wrapper is active in the Express app.
+ * Note: Background ArcGIS syncing is now triggered automatically during upload.
  */
 export class AssetController {
   private readonly assetService: AssetService;
@@ -37,6 +37,7 @@ export class AssetController {
 
     const payload = req.body as CreateAssetDTO;
 
+    // This creates the record and auto-triggers the ArcGIS Sync Background Job
     const data = await this.assetService.uploadAsset(userId, file, payload);
 
     successResponse(res, {
@@ -59,9 +60,25 @@ export class AssetController {
     });
   };
 
+  public getPublicAssets = async (req: Request, res: Response) => {
+    const query = req.query as unknown as GetAssetsQueryDTO;
+
+    const { data, meta } = await this.assetService.getPublicAssets(query);
+
+    successResponse(res, {
+      statusCode: 200,
+      message: MESSAGES.COMMON.SUCCESS.FETCHED(RESOURCES.ASSET),
+      data,
+      meta,
+    });
+  };
+
   public getAssetDetail = async (req: Request, res: Response) => {
     const id = req.params.id as string;
+
+    // Naturally returns syncStatus, syncProgress, and arcgisItemId
     const data = await this.assetService.getAssetDetail(id);
+
     successResponse(res, {
       statusCode: 200,
       message: MESSAGES.COMMON.SUCCESS.FETCHED(RESOURCES.ASSET),
@@ -85,7 +102,10 @@ export class AssetController {
   public updateStatus = async (req: Request, res: Response) => {
     const id = req.params.id as string;
     const payload = req.body as UpdateAssetStatusDTO;
+
+    // Admin changes map visibility here (APPROVED / REJECTED)
     const data = await this.assetService.updateStatus(id, payload);
+
     successResponse(res, {
       statusCode: 200,
       message: MESSAGES.COMMON.SUCCESS.UPDATED(RESOURCES.ASSET),

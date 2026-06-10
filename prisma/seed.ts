@@ -363,7 +363,6 @@ async function main() {
 
   // 1. CLEANUP: Delete in reverse order of dependency (Children -> Parents)
   // This prevents Foreign Key constraint errors during cleanup
-  await prisma.publishJob.deleteMany();
   await prisma.annotation.deleteMany();
   await prisma.scene.deleteMany();
   await prisma.asset.deleteMany();
@@ -487,16 +486,7 @@ async function main() {
   }
   console.log(`✅ Created ${attributeAssets.length} ATTRIBUTE assets.`);
 
-  // 5. Mock Job (using first SHAPE asset)
-  const firstShape = await prisma.asset.findFirst({ where: { fileType: 'SHAPE' } });
-  if (firstShape) {
-    await prisma.publishJob.create({
-      data: { assetId: firstShape.id, status: 'COMPLETED', progress: 100 }
-    });
-    console.log('✅ Mock Publish Job created.');
-  }
-
-  // 6. Mock Scene
+  // 5. Mock Scene
   await prisma.scene.create({
     data: {
       authorId: users[0].id,

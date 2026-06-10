@@ -21,9 +21,6 @@ export class AssetRoute {
   public router: Router;
   private readonly assetController: AssetController;
 
-  /**
-   * Init Route with Dependency Injection (DI)
-   */
   constructor(controller?: AssetController) {
     this.router = Router();
     this.assetController = controller || new AssetController();
@@ -41,7 +38,15 @@ export class AssetRoute {
       this.assetController.uploadAsset
     );
 
-    // 2. Get all Assets (Users see their own, Admins see all)
+    // 2. EXTRA: Get all APPROVED assets (PUBLIC PATH)
+    // MUST be declared before GET /:id so "public" isn't treated as an ID!
+    this.router.get(
+      '/public',
+      validate(getAssetsQuerySchema),
+      this.assetController.getPublicAssets
+    );
+
+    // 3. Get all Assets (Users see their own, Admins see all)
     this.router.get(
       ENDPOINTS.BASE.BASE,
       verifyToken,
@@ -49,7 +54,7 @@ export class AssetRoute {
       this.assetController.getAssets
     );
 
-    // 3. Get Asset Detail
+    // 4. Get Asset Detail
     this.router.get(
       ENDPOINTS.ASSET.GET_BY_ID,
       verifyToken,
@@ -57,7 +62,7 @@ export class AssetRoute {
       this.assetController.getAssetDetail
     );
 
-    // 4. Admin QA/QC: Approve or Reject
+    // 5. Admin QA/QC: Approve or Reject
     this.router.patch(
       ENDPOINTS.ASSET.UPDATE_STATUS,
       verifyToken,
@@ -67,6 +72,7 @@ export class AssetRoute {
       this.assetController.updateStatus
     );
 
+    // 6. Update Asset metadata
     this.router.patch(
       ENDPOINTS.ASSET.GET_BY_ID,
       verifyToken,
@@ -75,16 +81,14 @@ export class AssetRoute {
       this.assetController.updateAsset
     );
 
-    // 5. Delete Asset (Owner or Admin)
+    // 7. Delete Asset (Owner or Admin)
     this.router.delete(
       ENDPOINTS.ASSET.GET_BY_ID,
       verifyToken,
-      // requireOwnership(), // Assumes req.params.id is the asset ID. (See note below)
       validate(getIDSchema),
       this.assetController.deleteAsset
     );
   }
 }
 
-// Export default instance of Route to be used in main route configuration
 export default new AssetRoute().router;

@@ -99,9 +99,16 @@ model Otp {
  * ========================================== */
 
 enum AssetStatus {
-  PENDING
-  APPROVED
-  REJECTED
+  PENDING   // Waiting for Admin approval to show on map
+  APPROVED  // Visible on map
+  REJECTED  // Rejected by Admin
+}
+
+enum SyncStatus {
+  PENDING     // Waiting in queue
+  PROCESSING  // Currently syncing with ArcGIS
+  COMPLETED   // Successfully synced and got ArcGIS ID
+  FAILED      // Failed to sync
 }
 
 enum AssetType {
@@ -117,62 +124,31 @@ model Asset {
   // Metadata
   name           String
   description    String?     @db.Text
-  fileUrl        String      @map("file_url") // S3 or Local storage path
+  fileUrl        String      @map("file_url")
   fileType       AssetType   @map("file_type")
-  
-  // JSON payload to store { "xCol": "Long", "yCol": "Lat" } for Point Data
   metadata       Json?
 
-  // ArcGIS Sync
-  arcgisItemId   String?     @map("arcgis_item_id")
+  // System & Map Visibility Status
   status         AssetStatus @default(PENDING)
+
+  // ArcGIS Sync Tracking (Replaces Job Module)
+  arcgisItemId   String?     @map("arcgis_item_id")
+  syncStatus     SyncStatus  @default(PENDING) @map("sync_status")
+  syncProgress   Int         @default(0) @map("sync_progress")
+  syncError      String?     @db.Text @map("sync_error")
   
-  // Self-Relation: Attribute data (.xlsx) can be bound to a Shape layer (.rvt)
+  // Self-Relation
   bindToShapeId  String?     @db.Uuid @map("bind_to_shape_id")
-  
-  // onDelete: SetNull ensures if the Parent Shape is deleted, the tabular data isn't deleted, just unlinked.
   parentShape    Asset?      @relation("ShapeAttributes", fields: [bindToShapeId], references: [id], onDelete: SetNull)
   childData      Asset[]     @relation("ShapeAttributes")
 
-  // Raw Spatial Data (Optional: If you want to store bounding boxes or center points in DB)
-  // geom        Unsupported("geometry(Point, 4326)")? 
-
   // Relations
-  owner          User         @relation("UserAssets", fields: [ownerId], references: [id], onDelete: Cascade)
-  publishJob     PublishJob?  @relation("AssetJob")
+  owner          User        @relation("UserAssets", fields: [ownerId], references: [id], onDelete: Cascade)
 
-  createdAt      DateTime     @default(now()) @map("created_at")
-  updatedAt      DateTime     @updatedAt @map("updated_at")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
 
   @@map("assets")
-}
-
-// ==========================================
-// JOB MODULE
-// ==========================================
-
-enum JobStatus {
-  PENDING
-  PROCESSING
-  COMPLETED
-  FAILED
-}
-
-model PublishJob {
-  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  
-  // @unique forces the strict 1-to-1 relationship!
-  assetId      String    @unique @db.Uuid @map("asset_id")
-  asset        Asset     @relation("AssetJob", fields: [assetId], references: [id], onDelete: Cascade)
-  
-  status       JobStatus @default(PENDING)
-  progress     Int       @default(0) // 0 to 100
-  errorLog     String?   @db.Text @map("error_log")
-  
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-
-  @@map("publish_jobs")
 }
 
 // ==========================================
