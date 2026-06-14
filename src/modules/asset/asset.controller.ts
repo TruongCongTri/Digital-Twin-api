@@ -49,21 +49,11 @@ export class AssetController {
 
   public getAssets = async (req: Request, res: Response) => {
     const query = req.query as unknown as GetAssetsQueryDTO;
-    const { id: userId, role } = (req as any).user;
+    // Safely extract user info (will be undefined for Guests)
+    const user = (req as any).user;
 
-    const { data, meta } = await this.assetService.getAssets(query, userId, role);
-    successResponse(res, {
-      statusCode: 200,
-      message: MESSAGES.COMMON.SUCCESS.FETCHED(RESOURCES.ASSET),
-      data,
-      meta,
-    });
-  };
-
-  public getPublicAssets = async (req: Request, res: Response) => {
-    const query = req.query as unknown as GetAssetsQueryDTO;
-
-    const { data, meta } = await this.assetService.getPublicAssets(query);
+    // Pass undefined userId/role if it's a guest
+    const { data, meta } = await this.assetService.getAssets(query, user?.id, user?.role);
 
     successResponse(res, {
       statusCode: 200,
@@ -72,12 +62,28 @@ export class AssetController {
       meta,
     });
   };
+
+  // public getPublicAssets = async (req: Request, res: Response) => {
+  //   const query = req.query as unknown as GetAssetsQueryDTO;
+
+  //   const { data, meta } = await this.assetService.getPublicAssets(query);
+
+  //   successResponse(res, {
+  //     statusCode: 200,
+  //     message: MESSAGES.COMMON.SUCCESS.FETCHED(RESOURCES.ASSET),
+  //     data,
+  //     meta,
+  //   });
+  // };
 
   public getAssetDetail = async (req: Request, res: Response) => {
     const id = req.params.id as string;
 
-    // Naturally returns syncStatus, syncProgress, and arcgisItemId
-    const data = await this.assetService.getAssetDetail(id);
+    // Safely extract user info (might be undefined if called via a public route without a token)
+    const user = (req as any).user;
+
+    // Pass the user ID and role down to the service for privacy checks
+    const data = await this.assetService.getAssetDetail(id, user?.id, user?.role);
 
     successResponse(res, {
       statusCode: 200,
@@ -101,10 +107,13 @@ export class AssetController {
 
   public updateStatus = async (req: Request, res: Response) => {
     const id = req.params.id as string;
+
+    // Extract the admin's details from the token payload
+    const { id: adminId, role } = (req as any).user;
     const payload = req.body as UpdateAssetStatusDTO;
 
-    // Admin changes map visibility here (APPROVED / REJECTED)
-    const data = await this.assetService.updateStatus(id, payload);
+    // Pass everything down to the service
+    const data = await this.assetService.updateStatus(id, adminId, role, payload);
 
     successResponse(res, {
       statusCode: 200,
@@ -121,6 +130,22 @@ export class AssetController {
     successResponse(res, {
       statusCode: 200,
       message: MESSAGES.COMMON.SUCCESS.DELETED(RESOURCES.ASSET),
+    });
+  };
+
+  // Add this inside AssetController
+  public getMapAssets = async (req: Request, res: Response) => {
+    // Extract query and user
+    const query = req.query as unknown as GetAssetsQueryDTO;
+    const user = (req as any).user;
+
+    // Pass query down!
+    const data = await this.assetService.getMapAssets(query, user?.id, user?.role);
+
+    successResponse(res, {
+      statusCode: 200,
+      message: MESSAGES.COMMON.SUCCESS.FETCHED(RESOURCES.ASSET),
+      data,
     });
   };
 }

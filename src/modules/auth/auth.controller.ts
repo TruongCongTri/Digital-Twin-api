@@ -42,6 +42,7 @@ export class AuthController {
 
   public login = async (req: Request, res: Response): Promise<void> => {
     const payload = req.body as LoginDTO;
+    console.log(payload);
 
     const clientMeta = {
       ipAddress: req.ip || req.socket.remoteAddress || 'unknown',

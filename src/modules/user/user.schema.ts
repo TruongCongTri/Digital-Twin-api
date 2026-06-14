@@ -31,7 +31,7 @@ export const getUsersQuerySchema = z.object({
   query: paginationSchema.extend({
     search: z.string().trim().optional(), // Search by email or name
     role: z.enum(['ADMIN', 'USER']).optional(),
-    status: z.enum(['PENDING', 'APPROVED', 'REJECTED']).optional(),
+    status: z.enum(['PENDING', 'APPROVED', 'REJECTED', 'SUSPENDED']).optional(),
   }),
 });
 

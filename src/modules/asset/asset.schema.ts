@@ -42,7 +42,7 @@ export const createAssetSchema = z.object({
  */
 export const updateAssetStatusSchema = z.object({
   body: z.object({
-    status: z.enum(['APPROVED', 'REJECTED']),
+    status: z.enum(['PENDING', 'APPROVED', 'REJECTED']),
   }),
 });
 
@@ -52,6 +52,8 @@ export const getAssetsQuerySchema = z.object({
     syncStatus: z.enum(['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED']).optional(),
     fileType: z.enum(['SHAPE', 'ATTRIBUTE', 'POINT']).optional(),
     search: z.string().optional(),
+    own: z.enum(['true', 'false']).optional(),
+    ownerId: z.string().uuid().optional(),
   }),
 });
 

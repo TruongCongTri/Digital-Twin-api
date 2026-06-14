@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { AssetController } from './asset.controller';
 import { validate } from '@/middlewares/validate.middleware';
-import { verifyToken, requireRole } from '@/middlewares/auth.middleware';
+import { verifyToken, requireRole, optionalVerifyToken } from '@/middlewares/auth.middleware';
 import { uploadAssetMiddleware } from '@/common/configs/multer.config';
 import { getIDSchema } from '@/common/schemas/reusable.schema';
 import {
@@ -38,18 +38,25 @@ export class AssetRoute {
       this.assetController.uploadAsset
     );
 
+    this.router.get(
+      '/map',
+      optionalVerifyToken,
+      validate(getAssetsQuerySchema),
+      this.assetController.getMapAssets
+    );
+
     // 2. EXTRA: Get all APPROVED assets (PUBLIC PATH)
     // MUST be declared before GET /:id so "public" isn't treated as an ID!
-    this.router.get(
-      '/public',
-      validate(getAssetsQuerySchema),
-      this.assetController.getPublicAssets
-    );
+    // this.router.get(
+    //   '/public',
+    //   validate(getAssetsQuerySchema),
+    //   this.assetController.getPublicAssets
+    // );
 
     // 3. Get all Assets (Users see their own, Admins see all)
     this.router.get(
       ENDPOINTS.BASE.BASE,
-      verifyToken,
+      optionalVerifyToken,
       validate(getAssetsQuerySchema),
       this.assetController.getAssets
     );
@@ -57,7 +64,7 @@ export class AssetRoute {
     // 4. Get Asset Detail
     this.router.get(
       ENDPOINTS.ASSET.GET_BY_ID,
-      verifyToken,
+      optionalVerifyToken,
       validate(getIDSchema),
       this.assetController.getAssetDetail
     );

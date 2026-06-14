@@ -10,12 +10,15 @@ import {
   UpdateUserRoleDTO,
   UpdateUserStatusDTO,
 } from '@/modules/user/user.schema';
+import { AuthService } from '../auth/auth.service';
 
 export class UserController {
   private readonly userService: UserService;
+  private readonly authService: AuthService;
 
   constructor() {
     this.userService = new UserService();
+    this.authService = new AuthService();
   }
 
   // --- ADMIN CONTROLLERS ---
@@ -100,6 +103,42 @@ export class UserController {
       statusCode: 200,
       message: MESSAGES.COMMON.SUCCESS.UPDATED(RESOURCES.USER),
       data,
+    });
+  };
+
+  // ==========================================
+  // ADMIN OVERRIDE METHODS
+  // ==========================================
+  public triggerPasswordReset = async (req: Request, res: Response) => {
+    const targetUserId = req.params.id as string;
+
+    await this.authService.adminTriggerPasswordReset(targetUserId);
+
+    successResponse(res, {
+      statusCode: 200,
+      message: 'Password reset instructions have been sent to the user.',
+    });
+  };
+
+  public forceLogout = async (req: Request, res: Response) => {
+    const targetUserId = req.params.id as string;
+
+    const sessionsKilled = await this.authService.adminRevokeAllUserSessions(targetUserId);
+
+    successResponse(res, {
+      statusCode: 200,
+      message: `Successfully revoked ${sessionsKilled} active session(s) for this user.`,
+    });
+  };
+
+  public verifyEmailManually = async (req: Request, res: Response) => {
+    const targetUserId = req.params.id as string;
+
+    await this.authService.adminVerifyUserEmail(targetUserId);
+
+    successResponse(res, {
+      statusCode: 200,
+      message: 'User email has been manually verified.',
     });
   };
 }

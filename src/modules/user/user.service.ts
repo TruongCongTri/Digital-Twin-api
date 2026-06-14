@@ -11,6 +11,7 @@ import { MESSAGES } from '@/constants/messages';
 import { ERROR_CODES } from '@/constants/error-codes';
 import { RESOURCES } from '@/constants/resources';
 import { PaginationMetaDto } from '@/data/dtos/pagination.dto';
+import { AuthService } from '../auth/auth.service';
 
 export class UserService {
   private readonly userRepository: UserRepository;
@@ -49,8 +50,52 @@ export class UserService {
   }
 
   public async updateStatus(id: string, payload: UpdateUserStatusDTO) {
-    await this.getProfile(id); // Verify existence
-    const updatedUser = await this.userRepository.updateAccountStatus(id, payload.status);
+    const user = await this.getProfile(id); // Fetch current user and verify existence
+    const currentStatus = user.accountStatus;
+    const newStatus = payload.status;
+
+    // Prevent redundant database updates
+    if (currentStatus === newStatus) {
+      throw new AppError(
+        400,
+        `User is already marked as ${newStatus}`,
+        ERROR_CODES.COMMON.INVALID_INPUT
+      );
+    }
+
+    // STATE MACHINE VALIDATOR
+    const validTransitions: Record<string, string[]> = {
+      // From Pending -> Can only Approve or Reject
+      PENDING: ['APPROVED', 'REJECTED'],
+
+      // From Rejected -> Can only Reset back to Pending (or directly Approve if you prefer)
+      REJECTED: ['PENDING', 'APPROVED'],
+
+      // From Approved -> Can only Suspend (Cannot reject an active user)
+      APPROVED: ['SUSPENDED'],
+
+      // From Suspended -> Can only Unsuspend (Approve)
+      SUSPENDED: ['APPROVED'],
+    };
+
+    // Check if the requested transition is allowed based on current status
+    if (!validTransitions[currentStatus]?.includes(newStatus)) {
+      throw new AppError(
+        400,
+        `Invalid status transition. Cannot change status from ${currentStatus} to ${newStatus}.`,
+        ERROR_CODES.COMMON.INVALID_INPUT
+      );
+    }
+
+    // Process the valid update
+    const updatedUser = await this.userRepository.updateAccountStatus(id, newStatus);
+
+    // Security Action: If a user is Suspended or Rejected, force logout!
+    if (newStatus === 'SUSPENDED' || newStatus === 'REJECTED') {
+      const authService = new AuthService();
+      await authService.adminRevokeAllUserSessions(id);
+    }
+
     return this.sanitizeUser(updatedUser);
   }
 

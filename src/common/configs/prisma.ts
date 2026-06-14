@@ -3,7 +3,7 @@
  * @description Prisma Client initialization and configuration.
  * Configures the PostgreSQL adapter and sets up logging levels based on the environment.
  */
-import { PrismaClient } from '@/generated/client';
+import { PrismaClient } from '@/generated/index';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 import { env } from '@/common/configs/env.config';
@@ -13,7 +13,11 @@ import { APP_CONFIG } from '@/constants/app.constant';
  * 1. Database Connection Pool
  * Configures the 'pg' pool to manage multiple database connections efficiently.
  */
-const pool = new pg.Pool({ connectionString: env.DATABASE_URL });
+const pool = new pg.Pool({
+  connectionString: env.DATABASE_URL,
+  max: 10,
+  idleTimeoutMillis: 30000,
+});
 
 /**
  * 2. Prisma Adapter

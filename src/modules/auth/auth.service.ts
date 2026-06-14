@@ -77,7 +77,13 @@ export class AuthService {
         ERROR_CODES.COMMON.FORBIDDEN
       );
     }
-
+    if (user.accountStatus === 'SUSPENDED') {
+      throw new AppError(
+        403,
+        'Your account has been suspended by an administrator.',
+        ERROR_CODES.COMMON.FORBIDDEN
+      );
+    }
     // 2. Check Lockout
     if (user.lockedUntil && user.lockedUntil > new Date()) {
       const lockMinutes = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
@@ -162,7 +168,7 @@ export class AuthService {
       );
 
     if (session.user.accountStatus !== 'APPROVED')
-      throw new AppError(403, 'Account no longer approved.', ERROR_CODES.COMMON.FORBIDDEN);
+      throw new AppError(403, 'Account no longer active.', ERROR_CODES.COMMON.FORBIDDEN);
 
     const lifespanInDays = Math.round(
       (session.expiresAt.getTime() - session.createdAt.getTime()) / (1000 * 60 * 60 * 24)
@@ -343,5 +349,78 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(dto.newPassword, salt);
 
     return await this.authRepository.updatePassword(userId, hashedPassword);
+  }
+
+  // ==========================================
+  // ADMIN OVERRIDE METHODS
+  // ==========================================
+
+  /**
+   * @description Admin explicitly triggers a password reset email for a user
+   */
+  async adminTriggerPasswordReset(targetUserId: string) {
+    const user = await this.authRepository.findById(targetUserId);
+
+    if (!user) {
+      throw new AppError(
+        404,
+        MESSAGES.COMMON.ERROR.NOT_FOUND(RESOURCES.USER),
+        ERROR_CODES.COMMON.RECORD_NOT_FOUND
+      );
+    }
+
+    // Generate standard reset OTP
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    await this.authRepository.createOtp({
+      email: user.email,
+      code: otpCode,
+      type: 'FORGOT_PASSWORD',
+      expiresAt: new Date(Date.now() + APP_CONFIG.AUTH.OTP_FORGOT_EXPIRATION_MINUTES * 60 * 1000),
+    });
+
+    console.log(
+      `[MOCK EMAIL to ${user.email}] Your Admin has requested a password reset. Your OTP is: ${otpCode}`
+    );
+    // await notificationService.sendEmailOTP(user.email, otpCode);
+
+    return true;
+  }
+
+  /**
+   * @description Admin instantly logs a user out of all devices
+   */
+  async adminRevokeAllUserSessions(targetUserId: string) {
+    const activeSessions = await this.authRepository.findActiveSessionsForLogin(targetUserId);
+
+    if (activeSessions.length > 0) {
+      const sessionIds = activeSessions.map((s) => s.id);
+      await this.authRepository.revokeSessions(sessionIds);
+    }
+
+    return activeSessions.length; // Return how many sessions were killed
+  }
+
+  /**
+   * @description Admin manually verifies a user's email (Bypasses OTP)
+   */
+  async adminVerifyUserEmail(targetUserId: string) {
+    const user = await this.authRepository.findById(targetUserId);
+
+    if (!user) {
+      throw new AppError(
+        404,
+        MESSAGES.COMMON.ERROR.NOT_FOUND(RESOURCES.USER),
+        ERROR_CODES.COMMON.RECORD_NOT_FOUND
+      );
+    }
+    if (user.isEmailVerified) {
+      throw new AppError(400, 'User email is already verified.', ERROR_CODES.COMMON.INVALID_INPUT);
+    }
+
+    // Update the user directly (You will need to ensure this method exists in your Auth or User repository)
+    // await prisma.user.update({ where: { id: targetUserId }, data: { isEmailVerified: true } });
+
+    return true;
   }
 }

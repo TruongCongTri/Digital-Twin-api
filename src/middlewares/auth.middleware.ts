@@ -9,7 +9,7 @@ import { MESSAGES } from '@/constants/messages';
 declare global {
   namespace Express {
     interface Request {
-      user?: { id: string; role: string; sessionId: string };
+      user?: { id: string; role: string; sessionId: string } | undefined;
     }
   }
 }
@@ -61,6 +61,55 @@ export const verifyToken = async (
     } else {
       next(new AppError(401, MESSAGES.AUTH.ERROR.INVALID_TOKEN, ERROR_CODES.AUTH.INVALID_TOKEN));
     }
+  }
+};
+
+// 2. OPTIONAL VERIFY TOKEN (For mixed public/private routes like /assets/map)
+export const optionalVerifyToken = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    // If no valid auth header format, proceed as a Public Guest
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      req.user = undefined;
+      return next();
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    // If empty token, proceed as Guest
+    if (!token) {
+      req.user = undefined;
+      return next();
+    }
+
+    const decoded = JwtUtil.verifyAccessToken(token) as {
+      id: string;
+      role: string;
+      sessionId: string;
+    };
+
+    // We still must check if the session was revoked!
+    const session = await prisma.session.findUnique({
+      where: { id: decoded.sessionId },
+    });
+
+    if (!session || session.isRevoked) {
+      req.user = undefined; // Revoked tokens revert to Guest
+    } else {
+      req.user = decoded; // Valid session! Attach user data.
+    }
+
+    next();
+  } catch (_error: any) {
+    // If the token is invalid, expired, or tampered with, swallow the error
+    // and proceed as a Public Guest.
+    req.user = undefined;
+    next();
   }
 };
 

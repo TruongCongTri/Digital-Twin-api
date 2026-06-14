@@ -99,6 +99,36 @@ export class UserRoute {
       validate(getIDSchema),
       this.userController.deleteUser
     );
+
+    // ==========================================
+    // ADMIN OVERRIDE METHODS
+    // ==========================================
+    // 1. Trigger Password Reset Email
+    this.router.post(
+      '/:id/reset-password',
+      verifyToken,
+      requireRole(['ADMIN']), // ONLY ADMINS
+      validate(getIDSchema),
+      this.userController.triggerPasswordReset
+    );
+
+    // 2. Force Logout (Kill all sessions)
+    this.router.post(
+      '/:id/force-logout',
+      verifyToken,
+      requireRole(['ADMIN']), // ONLY ADMINS
+      validate(getIDSchema),
+      this.userController.forceLogout
+    );
+
+    // 3. Manually Verify Email
+    this.router.post(
+      '/:id/verify-email',
+      verifyToken,
+      requireRole(['ADMIN']), // ONLY ADMINS
+      validate(getIDSchema),
+      this.userController.verifyEmailManually
+    );
   }
 }
 

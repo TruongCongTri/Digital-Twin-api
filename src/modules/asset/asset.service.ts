@@ -110,42 +110,99 @@ export class AssetService {
     return newAsset;
   }
 
-  public async getAssets(query: GetAssetsQueryDTO, userId: string, role: string) {
+  // Update getMapAssets to accept the query parameter
+  public async getMapAssets(query: GetAssetsQueryDTO, userId?: string, role?: string) {
+    // 🔒 Security Check for "Own" query
+    if (query.own === 'true' && !userId) {
+      throw new AppError(
+        401,
+        MESSAGES.AUTH.ERROR.UNAUTHENTICATED,
+        ERROR_CODES.AUTH.UNAUTHENTICATED
+      );
+    }
+
+    const data = await this.assetRepository.findMapAssets(query, userId, role);
+    return data;
+  }
+
+  public async getAssets(query: GetAssetsQueryDTO, userId?: string, role?: string) {
+    // 🔒 Security Check for "Own" query
+    if (query.own === 'true' && !userId) {
+      throw new AppError(
+        401,
+        MESSAGES.AUTH.ERROR.UNAUTHENTICATED,
+        ERROR_CODES.AUTH.UNAUTHENTICATED
+      );
+    }
+
     const { total, data } = await this.assetRepository.findAssets(query, userId, role);
     const meta = PaginationMetaDto.create(query.page, query.limit, total);
     return { data, meta };
   }
 
-  public async getPublicAssets(query: GetAssetsQueryDTO) {
-    // Force the status query to only fetch APPROVED assets for the public
-    query.status = 'APPROVED';
-
-    // Pass 'ADMIN' role to bypass the ownerId check in the repository
-    const { total, data } = await this.assetRepository.findAssets(query, undefined, 'ADMIN');
-
-    const meta = PaginationMetaDto.create(query.page, query.limit, total);
-    return { data, meta };
-  }
-
-  public async getAssetDetail(id: string) {
+  public async getAssetDetail(id: string, userId?: string, role?: string) {
     const asset = await this.assetRepository.getAssetById(id);
-    if (!asset)
+
+    if (!asset) {
       throw new AppError(
         404,
         MESSAGES.COMMON.ERROR.NOT_FOUND(RESOURCES.ASSET),
         ERROR_CODES.COMMON.RECORD_NOT_FOUND
       );
+    }
+
+    // PRIVACY CHECK: If the asset is NOT public (APPROVED), block unauthorized access
+    if (asset.status !== 'APPROVED') {
+      // If the user isn't logged in at all, deny.
+      if (!userId || !role) {
+        throw new AppError(
+          401,
+          MESSAGES.AUTH.ERROR.UNAUTHENTICATED,
+          ERROR_CODES.AUTH.UNAUTHENTICATED
+        );
+      }
+      // If the user is logged in, but is NOT an Admin and NOT the owner, deny.
+      if (role !== 'ADMIN' && asset.ownerId !== userId) {
+        throw new AppError(
+          403,
+          MESSAGES.MIDDLEWARE.FORBIDDEN_OWNERSHIP,
+          ERROR_CODES.COMMON.FORBIDDEN_OWNERSHIP
+        );
+      }
+    }
+
     return asset;
   }
 
-  public async updateStatus(id: string, payload: UpdateAssetStatusDTO) {
-    await this.getAssetDetail(id); // Ensures asset exists
-    // Changes map visibility (APPROVED | REJECTED)
+  public async updateStatus(
+    id: string,
+    adminId: string,
+    role: string,
+    payload: UpdateAssetStatusDTO
+  ) {
+    // 1. Fetch asset securely (Passing adminId and role fixes the privacy bug!)
+    const asset = await this.getAssetDetail(id, adminId, role);
+
+    // 2. Prevent redundant database updates
+    if (asset.status === payload.status) {
+      throw new AppError(
+        400,
+        `Asset is already marked as ${payload.status}`,
+        ERROR_CODES.COMMON.INVALID_INPUT
+      );
+    }
+
+    // 3. Update the status
+    // Because of our repository logic, changing this to PENDING or REJECTED
+    // will instantly hide it from the /map and public endpoints.
     return await this.assetRepository.updateStatus(id, payload.status as any);
   }
 
   public async updateAsset(id: string, userId: string, role: string, payload: UpdateAssetDTO) {
-    const asset = await this.getAssetDetail(id);
+    console.log('start upload asset service');
+
+    // FIX: Pass userId and role down so the privacy check knows who is asking!
+    const asset = await this.getAssetDetail(id, userId, role);
 
     // Ownership check
     if (role !== 'ADMIN' && asset.ownerId !== userId) {
@@ -160,7 +217,8 @@ export class AssetService {
   }
 
   public async deleteAsset(id: string, userId: string, role: string) {
-    const asset = await this.getAssetDetail(id);
+    // FIX: Pass userId and role down so the privacy check knows who is asking!
+    const asset = await this.getAssetDetail(id, userId, role);
 
     // Ownership check
     if (role !== 'ADMIN' && asset.ownerId !== userId) {
@@ -176,7 +234,7 @@ export class AssetService {
     if (filename) this.removeFileFromDisk(filename);
 
     // 2. Remove from DB
-    await this.assetRepository.delete(id);
+    await this.assetRepository.deleteAsset(id);
     return true;
   }
 

@@ -5,10 +5,12 @@
  */
 export const FIELDS = {
   // --- SERVER ---
+  DIRECT_URL: 'DIRECT_URL',
   DB: 'DATABASE_URL',
   CLIENT: 'CLIENT_URL',
   REDIS_HOST: 'REDIS_HOST',
   REDIS_PORT: 'REDIS_PORT',
+  REDIS_URL: 'REDIS_URL',
 
   /* --- 1. GENERAL & INFRASTRUCTURE --- */
   ID: 'ID',

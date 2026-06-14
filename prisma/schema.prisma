@@ -7,7 +7,7 @@ generator client {
   provider = "prisma-client-js"
   output   = "../src/generated"
   moduleFormat = "cjs"
-  // previewFeatures = ["driverAdapters"]
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -27,6 +27,7 @@ enum AccountStatus {
   PENDING
   APPROVED
   REJECTED
+  SUSPENDED
 }
 
 enum OtpType {

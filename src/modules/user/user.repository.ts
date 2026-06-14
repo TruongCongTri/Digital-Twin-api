@@ -50,7 +50,10 @@ export class UserRepository extends BaseRepository<User> {
     });
   }
 
-  public async updateAccountStatus(id: string, status: 'APPROVED' | 'REJECTED') {
+  public async updateAccountStatus(
+    id: string,
+    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED'
+  ) {
     return await prisma.user.update({
       where: { id },
       data: { accountStatus: status },
