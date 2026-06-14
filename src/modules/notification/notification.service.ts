@@ -1,5 +1,5 @@
 import { NotificationRepository } from './notification.repository';
-import { NotificationType } from '@/generated';
+import { NotificationType } from '@prisma/client';
 import { getIO } from '@/common/configs/socket.config';
 import { SendNotificationDTO } from './notification.schema';
 

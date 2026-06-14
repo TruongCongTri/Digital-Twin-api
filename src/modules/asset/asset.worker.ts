@@ -1,7 +1,7 @@
 import { Queue, Worker, Job } from 'bullmq';
 import { redisConnection } from '@/common/configs/redis.config';
 import { prisma } from '@/common/configs/prisma';
-import { SyncStatus } from '@/generated/client';
+import { SyncStatus } from '@prisma/client';
 import { NotificationService } from '../notification/notification.service';
 import { getIO } from '@/common/configs/socket.config';
 

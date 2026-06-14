@@ -1,4 +1,4 @@
-import { Notification, Prisma } from '@/generated';
+import { Notification, Prisma } from '@prisma/client';
 // import { prisma } from '@/common/configs/prisma';
 import { BaseRepository } from '@/common/repositories/base.repository';
 import { prisma } from '@/common/configs/prisma';

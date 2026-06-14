@@ -1,4 +1,4 @@
-import { OtpType, Prisma, User } from '@/generated';
+import { OtpType, Prisma, User } from '@prisma/client';
 import { prisma } from '@/common/configs/prisma';
 import { BaseRepository } from '@/common/repositories/base.repository';
 import { RegisterDTO } from './auth.schema';

@@ -1,4 +1,4 @@
-import { Asset, AssetStatus, Prisma } from '@/generated';
+import { Asset, AssetStatus, Prisma } from '@prisma/client';
 import { prisma } from '@/common/configs/prisma';
 import { BaseRepository } from '@/common/repositories/base.repository';
 import { GetAssetsQueryDTO } from './asset.schema';

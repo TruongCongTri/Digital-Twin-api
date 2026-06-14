@@ -1,4 +1,4 @@
-import { User, Prisma, Role } from '@/generated/client';
+import { User, Prisma, Role } from '@prisma/client';
 import { prisma } from '@/common/configs/prisma';
 import { BaseRepository } from '@/common/repositories/base.repository';
 import {

@@ -2,7 +2,7 @@ import { getIO } from '@/common/configs/socket.config';
 import { SceneRepository } from './scene.repository';
 import { CreateAnnotationDTO, CreateSceneDTO } from './scene.schema';
 import { AppError } from '@/common/errors/app.error';
-import { Prisma } from '@/generated/client';
+import { Prisma } from '@prisma/client';
 
 export class SceneService {
   private readonly repo: SceneRepository;

@@ -1,4 +1,4 @@
-import { Prisma, Scene } from '@/generated';
+import { Prisma, Scene } from '@prisma/client';
 import { prisma } from '@/common/configs/prisma';
 import { BaseRepository } from '@/common/repositories/base.repository';
 
